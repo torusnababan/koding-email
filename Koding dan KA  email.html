@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Koding dan Kecerdasan Artifisial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: auto;
+        }
+        h1, h2 {
+            color: #0056b3;
+        }
+        .author-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        .author-info img {
+            width: 80px; /* Ukuran foto */
+            height: 80px; /* Ukuran foto */
+            border-radius: 50%; /* Membuat foto bulat */
+            margin-right: 15px;
+            object-fit: cover; /* Memastikan gambar pas tanpa terdistorsi */
+            border: 2px solid #0056b3;
+        }
+        .author-info div {
+            flex-grow: 1;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="email"], input[type="number"], select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .question {
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .question p {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .options label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: normal;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #timer {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #d9534f;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        #results {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #e9ecef;
+            display: none; /* Tersembunyi secara default */
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kuis Koding dan Kecerdasan Artifisial</h1>
+
+        <div class="author-info">
+            <img src="torus_nababan.jpg" alt="Foto Torus Manuntun Nababan, S.Pd.,M.Pd">
+            <div>
+                <p style="margin: 0; font-weight: bold;">Oleh. Torus Manuntun Nababan, S.Pd.,M.Pd</p>
+                <p style="margin: 0; font-size: 0.9em; color: #555;">(Pengembang Soal Kuis/guru SMPN 4 Tarutung)</p>
+            </div>
+        </div>
+        <p>Waktu pengerjaan: <span id="timeLimit">15</span> menit</p>
+        <div id="timer">Waktu tersisa: 15:00</div>
+
+        <form id="quizForm">
+            <h2>Identitas Guru</h2>
+            <div class="form-group">
+                <label for="sekolah">Nama Sekolah:</label>
+                <input type="text" id="sekolah" name="sekolah" required>
+            </div>
+            <div class="form-group">
+                <label for="nama">Nama Guru:</label>
+                <input type="text" id="nama" name="nama" required>
+            </div>
+            <div class="form-group">
+                <label for="bidangStudi">Bidang Studi:</label>
+                <input type="text" id="bidangStudi" name="bidangStudi" required>
+            </div>
+            <div class="form-group">
+                <label for="semester">Semester:</label>
+                <select id="semester" name="semester" required>
+                    <option value="">Pilih Semester</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tahunAjaran">Tahun Ajaran:</label>
+                <input type="text" id="tahunAjaran" name="tahunAjaran" placeholder="Contoh: 2024/2025" required>
+            </div>
+
+            <hr>
+
+            <h2>Soal Kuis</h2>
+            <div id="questionsContainer">
+            </div>
+
+            <button type="submit">Selesai Kuis</button>
+        </form>
+
+        <div id="results">
+            <h2>Hasil Kuis</h2>
+            <p><strong>Nama Guru:</strong> <span id="resultNama"></span></p>
+            <p><strong>Skor Anda:</strong> <span id="score"></span></p>
+            <p id="message"></p>
+            <h3>Detail Jawaban:</h3>
+            <div id="answerDetails">
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://cdn.emailjs.com/sdk/2.3.2/email.min.js"></script>
+    <script type="text/javascript">
+       // Inisialisasi EmailJS dengan Public Key Anda
+       (function(){
+         // !!! PENTING: Ganti dengan Public Key EmailJS Anda yang BENAR !!!
+         emailjs.init("e_R3JuNlkCBUaNnzy"); // Contoh Public Key
+       })();
+    </script>
+
+    <script>
+        const questions = [
+            {
+                type: "basic_concept",
+                question: "Apa definisi paling sederhana dari **koding**?",
+                options: [
+                    "Menulis pesan di komputer.",
+                    "Memberikan instruksi kepada komputer untuk melakukan tugas tertentu.",
+                    "Menggambar desain grafis di layar.",
+                    "Memutar musik di perangkat digital."
+                ],
+                answer: "Memberikan instruksi kepada komputer untuk melakukan tugas tertentu."
+            },
+            {
+                type: "purpose",
+                question: "Mengapa kita perlu belajar **koding** di era modern ini?",
+                options: [
+                    "Agar bisa bermain game lebih baik.",
+                    "Untuk memahami cara kerja teknologi dan mengembangkan solusi digital.",
+                    "Hanya untuk mereka yang ingin menjadi ilmuwan komputer.",
+                    "Karena semua pekerjaan akan digantikan oleh robot."
+                ],
+                answer: "Untuk memahami cara kerja teknologi dan mengembangkan solusi digital."
+            },
+            {
+                type: "benefit",
+                question: "Manfaat utama dari belajar **koding** adalah mengembangkan kemampuan...",
+                options: [
+                    "Fisik dan motorik.",
+                    "Memasak dan menjahit.",
+                    "Berpikir logis, pemecahan masalah, dan kreativitas.",
+                    "Menghafal dan mengingat informasi."
+                ],
+                answer: "Berpikir logis, pemecahan masalah, dan kreativitas."
+            },
+            {
+                type: "relevance_all_fields",
+                question: "Apakah **koding** bermanfaat untuk semua bidang studi, termasuk yang tidak terkait langsung dengan teknologi?",
+                options: [
+                    "Tidak, hanya relevan untuk bidang IT.",
+                    "Ya, karena membantu mengembangkan pola pikir logis dan pemecahan masalah yang universal.",
+                    "Hanya untuk bidang sains dan matematika.",
+                    "Hanya jika Anda ingin menjadi seorang programmer profesional."
+                ],
+                answer: "Ya, karena membantu mengembangkan pola pikir logis dan pemecahan masalah yang universal."
+            },
+            {
+                type: "ai_definition",
+                question: "Apa kepanjangan dari **AI** dan pengertian dasarnya?",
+                options: [
+                    "Artificial Information: Informasi buatan.",
+                    "Advanced Integration: Integrasi canggih.",
+                    "Artificial Intelligence: Kecerdasan buatan yang memungkinkan mesin berpikir seperti manusia.",
+                    "Automated Interface: Antarmuka otomatis."
+                ],
+                answer: "Artificial Intelligence: Kecerdasan buatan yang memungkinkan mesin berpikir seperti manusia."
+            },
+            {
+                type: "why_ai",
+                question: "Mengapa penting bagi guru dan siswa untuk mengetahui tentang **Kecerdasan Artifisial (AI)**?",
+                options: [
+                    "Agar bisa mengikuti tren media sosial.",
+                    "Karena AI akan mengambil alih semua pekerjaan dan pendidikan tidak lagi relevan.",
+                    "Untuk memahami dampaknya pada masa depan, memanfaatkan potensinya, dan menghadapi tantangan etika.",
+                    "Hanya sebagai pengetahuan umum tanpa aplikasi praktis."
+                ],
+                answer: "Untuk memahami dampaknya pada masa depan, memanfaatkan potensinya, dan menghadapi tantangan etika."
+            },
+            {
+                type: "teacher_role_ai",
+                question: "Dengan kehadiran **AI**, apakah peran guru akan sepenuhnya tergantikan?",
+                options: [
+                    "Ya, AI akan mengajar lebih baik daripada guru manusia.",
+                    "Tidak, peran guru akan bertransformasi menjadi fasilitator dan pembimbing yang lebih strategis.",
+                    "AI hanya akan menggantikan guru di mata pelajaran tertentu.",
+                    "Tidak ada yang tahu masa depan peran guru dengan pasti."
+                ],
+                answer: "Tidak, peran guru akan bertransformasi menjadi fasilitator dan pembimbing yang lebih strategis."
+            },
+            {
+                type: "teacher_action_ai",
+                question: "Langkah apa yang harus dilakukan guru untuk menghadapi perkembangan **Koding dan AI** dalam pendidikan?",
+                options: [
+                    "Mengabaikannya dan tetap mengajar dengan metode lama.",
+                    "Menguasai semua aspek teknis AI dan Koding secara mendalam.",
+                    "Mempelajari dasar-dasar, mengintegrasikannya dalam pengajaran, dan mendorong pemikiran kritis siswa.",
+                    "Menyerahkan sepenuhnya pembelajaran Koding dan AI kepada ahli."
+                ],
+                answer: "Mempelajari dasar-dasar, mengintegrasikannya dalam pengajaran, dan mendorong pemikiran kritis siswa."
+            },
+            {
+                type: "coding_basic",
+                question: "Apa singkatan dari HTML dalam pengembangan web?",
+                options: ["HyperText Markup Language", "High-Level Text Machine Language", "Hyperlink and Text Management Language", "Home Tool Markup Language"],
+                answer: "HyperText Markup Language"
+            },
+            {
+                type: "coding_basic",
+                question: "Manakah dari berikut ini yang *bukan* bahasa pemrograman?",
+                options: ["Python", "Java", "CSS", "C++"],
+                answer: "CSS"
+            },
+            {
+                type: "ai_basic",
+                question: "Bidang AI yang memungkinkan komputer 'belajar' dari data tanpa diprogram secara eksplisit disebut apa?",
+                options: ["Deep Learning", "Machine Learning", "Neural Networks", "Expert Systems"],
+                answer: "Machine Learning"
+            },
+            {
+                type: "coding_concept",
+                question: "Dalam pemrograman, apa fungsi utama dari sebuah 'loop'?",
+                options: ["Untuk mendeklarasikan variabel", "Untuk mengulangi blok kode berkali-kali", "Untuk membuat keputusan kondisional", "Untuk menyimpan data dalam struktur array"],
+                answer: "Untuk mengulangi blok kode berkali-kali"
+            },
+            {
+                type: "ai_application",
+                question: "Contoh aplikasi AI yang paling relevan dalam kehidupan sehari-hari adalah...",
+                options: ["Kalkulator ilmiah", "Pengolah kata", "Sistem rekomendasi di platform streaming", "Program spreadsheet"],
+                answer: "Sistem rekomendasi di platform streaming"
+            },
+            {
+                type: "coding_concept",
+                question: "Apa yang dimaksud dengan 'debugging' dalam konteks pemrograman?",
+                options: ["Menulis kode baru", "Menguji kinerja program", "Mencari dan memperbaiki kesalahan dalam kode", "Menerjemahkan kode ke bahasa mesin"],
+                answer: "Mencari dan memperbaiki kesalahan dalam kode"
+            },
+            {
+                type: "ai_ethics",
+                question: "Salah satu isu etika penting dalam pengembangan AI adalah...",
+                options: ["Kecepatan komputasi", "Konsumsi daya", "Bias dalam algoritma dan pengambilan keputusan", "Ukuran dataset"],
+                answer: "Bias dalam algoritma dan pengambilan keputusan"
+            },
+            {
+                type: "coding_tool",
+                question: "Platform berbasis blok yang sering digunakan untuk memperkenalkan konsep coding kepada pemula adalah...",
+                options: ["Microsoft Word", "Scratch", "Adobe Photoshop", "Google Sheets"],
+                answer: "Scratch"
+            },
+            {
+                type: "ai_concept",
+                question: "Bagian dari Machine Learning yang menggunakan jaringan dengan banyak lapisan (layer) untuk memproses data disebut...",
+                options: ["Regresi Linear", "Klasifikasi", "Deep Learning", "Clustering"],
+                answer: "Deep Learning"
+            },
+            {
+                type: "coding_data",
+                question: "Tipe data yang hanya bisa bernilai 'True' atau 'False' dalam pemrograman disebut...",
+                options: ["Integer", "String", "Boolean", "Float"],
+                answer: "Boolean"
+            },
+            {
+                type: "coding_problem_solving",
+                question: "Jika Anda ingin membuat program yang menampilkan 'Halo Dunia!' di layar, perintah apa yang paling umum digunakan dalam banyak bahasa pemrograman?",
+                options: ["input()", "read()", "print()", "get()"],
+                answer: "print()"
+            },
+            {
+                type: "ai_misconception",
+                question: "Miskonsepsi umum tentang AI adalah bahwa AI...",
+                options: ["Selalu membutuhkan data yang sangat besar", "Sudah memiliki kesadaran seperti manusia", "Dapat membuat prediksi berdasarkan pola", "Dapat mengotomatisasi tugas-tugas berulang"],
+                answer: "Sudah memiliki kesadaran seperti manusia"
+            }
+        ];
+
+        const timeLimitInMinutes = 15;
+        let timeLeft = timeLimitInMinutes * 60; // detik
+        let timerInterval;
+
+        const quizForm = document.getElementById('quizForm');
+        const questionsContainer = document.getElementById('questionsContainer');
+        const timerDisplay = document.getElementById('timer');
+        const resultsDiv = document.getElementById('results');
+        const resultNama = document.getElementById('resultNama');
+        const scoreDisplay = document.getElementById('score');
+        const messageDisplay = document.getElementById('message');
+        const answerDetailsDiv = document.getElementById('answerDetails');
+
+        // Fungsi untuk mengacak array (algoritma Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Buat soal
+        function generateQuestions() {
+            shuffleArray(questions); // Acak soal
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('question');
+
+                // Acak opsi untuk setiap soal
+                const shuffledOptions = [...q.options];
+                shuffleArray(shuffledOptions);
+
+                questionDiv.innerHTML = `
+                    <p>${index + 1}. ${q.question}</p>
+                    <div class="options">
+                        ${shuffledOptions.map((option, i) => `
+                            <label>
+                                <input type="radio" name="q${index}" value="${option}"> ${option}
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                questionsContainer.appendChild(questionDiv);
+            });
+        }
+
+        // Mulai Timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `Waktu tersisa: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Waktu habis! Kuis akan otomatis disubmit.");
+                    quizForm.dispatchEvent(new Event('submit')); // Mengirim formulir secara terprogram
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        // Tangani pengiriman formulir
+        quizForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Mencegah pengiriman formulir default
+            clearInterval(timerInterval); // Hentikan timer
+
+            let totalScore = 0; // Inisialisasi total skor
+            const pointsPerCorrect = 5; // Poin untuk setiap jawaban benar
+            const maxPossibleScore = questions.length * pointsPerCorrect; // Skor maksimum yang mungkin (20 soal * 5 poin)
+
+            const userAnswers = {}; // Kumpulkan semua jawaban pengguna untuk detail
+            let detailedAnswerHtml = ""; // Untuk membangun HTML untuk detail email
+
+            questions.forEach((q, index) => {
+                const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
+                const userAnswer = selectedOption ? selectedOption.value : null;
+                userAnswers[`q${index}`] = userAnswer;
+
+                let answerStatusText = '';
+                let answerClass = '';
+
+                if (userAnswer === q.answer) {
+                    totalScore += pointsPerCorrect; // Tambahkan poin untuk jawaban benar
+                    answerStatusText = 'BENAR';
+                    answerClass = 'correct';
+                } else if (userAnswer !== null) {
+                    answerStatusText = 'SALAH';
+                    answerClass = 'incorrect';
+                } else {
+                    answerStatusText = 'TIDAK DIJAWAB';
+                    answerClass = ''; // Tidak ada kelas khusus untuk yang tidak dijawab di email
+                }
+
+                // Bangun HTML untuk detail jawaban di email
+                // Catatan: Gaya inline digunakan di sini untuk kompatibilitas email karena kelas CSS seringkali tidak dirender.
+                detailedAnswerHtml += `
+                    <p style="margin-bottom: 5px;">
+                        <strong>${index + 1}. ${q.question}</strong><br>
+                        Jawaban Anda: <span style="color: ${answerClass === 'correct' ? 'green' : (answerClass === 'incorrect' ? 'red' : 'black')}; font-weight: bold;">
+                            ${userAnswer !== null ? userAnswer : 'Tidak dijawab'}
+                        </span> (${answerStatusText})<br>
+                        Kunci Jawaban: <span style="color: green; font-weight: bold;">${q.answer}</span>
+                    </p>
+                `;
+            });
+
+            // Tampilkan hasil di halaman
+            const namaGuru = document.getElementById('nama').value;
+            const sekolah = document.getElementById('sekolah').value;
+            const bidangStudi = document.getElementById('bidangStudi').value;
+            const semester = document.getElementById('semester').value;
+            const tahunAjaran = document.getElementById('tahunAjaran').value;
+
+            resultNama.textContent = namaGuru;
+            scoreDisplay.textContent = `${totalScore} / ${maxPossibleScore}`;
+
+            let messageStatus = "";
+            if (totalScore >= 75) {
+                messageStatus = "Anda Layak Mengajarkan Koding dan KA";
+                messageDisplay.style.color = "green";
+            } else {
+                messageStatus = "Anda Tidak Layak Mengajarkan Koding dan KA";
+                messageDisplay.style.color = "red";
+            }
+            messageDisplay.textContent = messageStatus;
+
+            // Tampilkan detail jawaban di halaman
+            answerDetailsDiv.innerHTML = '';
+            questions.forEach((q, index) => {
+                const userAnswer = userAnswers[`q${index}`];
+                const detailDiv = document.createElement('p');
+                let answerStatusClass = '';
+                let userAnswerText = userAnswer !== null ? userAnswer : 'Tidak dijawab';
+
+                if (userAnswer === q.answer) {
+                    answerStatusClass = 'correct';
+                } else if (userAnswer !== null) {
+                    answerStatusClass = 'incorrect';
+                } else {
+                    answerStatusClass = '';
+                }
+
+                detailDiv.innerHTML = `
+                    <strong>${index + 1}. ${q.question}</strong><br>
+                    Jawaban Anda: <span class="${answerStatusClass}">
+                        ${userAnswerText}
+                    </span><br>
+                    Kunci Jawaban: <span class="correct">${q.answer}</span>
+                `;
+                answerDetailsDiv.appendChild(detailDiv);
+            });
+
+            quizForm.style.display = 'none'; // Sembunyikan formulir kuis
+            resultsDiv.style.display = 'block'; // Tampilkan div hasil
+
+            // --- Bagian PENTING: Kirim Email menggunakan EmailJS ---
+            const templateParams = {
+                sekolah: sekolah,
+                nama_guru: namaGuru,
+                bidang_studi: bidangStudi,
+                semester_ajaran: semester,
+                tahun_ajaran: tahunAjaran,
+                total_score: `${totalScore} / ${maxPossibleScore}`,
+                message_status: messageStatus,
+                detail_jawaban: detailedAnswerHtml, // Kirim detail jawaban dalam format HTML
+                waktu_kirim: new Date().toLocaleString('id-ID')
+            };
+
+            // !!! PENTING: PASTIKAN 'service_a46mbwj' adalah Service ID dan 'template_243nczt' adalah Template ID yang BENAR !!!
+            // Anda dapat menemukan ini di dasbor EmailJS Anda.
+            emailjs.send('service_a46mbwj', 'template_243nczt', templateParams)
+                .then(function(response) {
+                    console.log('Email berhasil dikirim!', response.status, response.text);
+                    alert('Hasil kuis berhasil dikirim ke email!'); // Lebih informatif
+                }, function(error) {
+                    console.error('Gagal mengirim email:', error);
+                    alert('Gagal mengirim hasil kuis ke email. Pastikan koneksi internet Anda stabil dan coba lagi. Jika masalah berlanjut, laporkan masalah ini.');
+                });
+            // --- Akhir Bagian EmailJS ---
+        });
+
+        // Inisialisasi kuis
+        generateQuestions();
+        startTimer();
+    </script>
+</body>
+</html>
